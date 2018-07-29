@@ -1,0 +1,2 @@
+[settings]
+cppstd=17
