@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import configparser
 import os
 import shutil
 import subprocess
 import platform
+import re
 
 import sesame
-import bincrafters.build_shared
 
 def build_cmd(args):
     """Build a recipe"""
@@ -30,12 +31,6 @@ def build_cmd(args):
     _build(args)
 
 def _build(args):
-    completed = subprocess.run(['conan', 'profile', 'list'], stdout=subprocess.PIPE, encoding='utf=8', check=True)
-    if not 'sesame-default.profile' in completed.stdout:
-        subprocess.run(['conan', 'profile', 'new', '--detect', 'sesame-default.profile'], check=True)
-        subprocess.run(['conan', 'profile', 'update', 'settings.build_type=RelWithDebInfo', 'sesame-default.profile'], check=True)
-        #for item in ['settings.os', 'settings.arch', 'settings.build_type', 'settings.compiler', 'settings.compiler.version', 'settings.compiler.libcxx']:
-        #    subprocess.run(['conan', 'profile', 'remove', item, 'sesame-default.profile'], check=False)
     target_path = os.path.expanduser('~/.conan/settings.yml')
     if os.path.exists(target_path):
         os.remove(target_path)
@@ -44,10 +39,9 @@ def _build(args):
     common_conan_env = {
         'CONAN_USERNAME': f'{args.user}',
         'CONAN_CHANNEL': f'{args.channel}',
-        'CONAN_VERSION': bincrafters.build_shared.get_version_from_recipe(),
 
         'CONAN_PIP_PACKAGE': 'False',
-        'CONAN_BUILD_TYPES': 'Debug,RelWithDebInfo',
+        'SESAME_BUILD_TYPES': 'Debug,RelWithDebInfo',
 
         'CONAN_UPLOAD': 'https://api.bintray.com/conan/orhun/sesame',
         'CONAN_STABLE_BRANCH_PATTERN': 'dontupload',
@@ -81,20 +75,40 @@ def _build(args):
             build_script = 'build.py'
             if os.path.isfile('build-sesame.py'):
                 build_script = 'build-sesame.py'
-            subprocess.run(['python', build_script], check=True, cwd='.', env={**os.environ.copy(), **conan_env})
+            subprocess.run(['python3', build_script], check=True, cwd='.', env={**os.environ.copy(), **conan_env})
 
 def _prepare_conan_env(args, prep_for):
     env = {}
 
+    os_build = {
+        'Windows': 'Windows',
+        'Darwin': 'Macos',
+        'Linux': 'Linux'
+    }.get(platform.system())
+    env['SESAME_OS_BUILD'] = os_build
+    env['SESAME_ARCH_BUILD'] = 'x86_64'
+
     env['SESAME_BUILD_FOR'] = prep_for
-    if args.default_profile:
-        env['CONAN_BASE_PROFILE'] = 'sesame-default.profile'
-    else:
-        env['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path(f'sesame-base-{prep_for}.profile')
 
     if prep_for == 'android':
-        env['CONAN_CLANG_VERSIONS'] = '7.0'
-        env['CONAN_ARCHS'] = 'armv8,x86'
+        # get current clang version
+        clang = f'{os.environ["ANDROID_NDK_HOME"]}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang'
+        output = subprocess.check_output([clang, '--version']).decode()
+        p = re.compile(r'clang version (\d).(\d).(\d)')
+        m = p.search(output)
+
+        env['SESAME_ARCHS'] = 'armv8,x86'
+        env['SESAME_CLANG_VERSIONS'] = f'{m[1]}.{m[2]}'
+        env['SESAME_ANDROID_API_LEVELS'] = '23,24,28'
+
+        # get current ndk version
+        source_properties = os.path.join(os.environ['ANDROID_NDK_HOME'], 'source.properties')
+        with open(source_properties, 'r') as f:
+            config_string = '[section]\n' + f.read()
+        config = configparser.ConfigParser()
+        config.read_string(config_string)
+        env['SESAME_ANDROID_NDK_VERSION'] = config['section']['Pkg.Revision'].split('.')[0]
+
     elif prep_for == 'emscripten':
         pass
     elif prep_for == 'linux':
