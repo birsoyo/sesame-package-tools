@@ -8,7 +8,12 @@ import subprocess
 import platform
 import re
 
+import docker
+import vswhere
+
 import sesame
+
+from colorama import Fore, Back, Style
 
 def build_cmd(args):
     """Build a recipe"""
@@ -41,17 +46,17 @@ def _build(args):
         'CONAN_CHANNEL': f'{args.channel}',
 
         'CONAN_PIP_PACKAGE': 'False',
-        'SESAME_BUILD_TYPES': 'Debug,RelWithDebInfo',
-
-        'CONAN_UPLOAD': 'https://api.bintray.com/conan/orhun/sesame',
-        'CONAN_STABLE_BRANCH_PATTERN': 'dontupload',
-        'CONAN_UPLOAD_ONLY_WHEN_STABLE': '1',
+        'CONAN_BUILD_TYPES': 'Debug,RelWithDebInfo',
+        'CONAN_STABLE_BRANCH_PATTERN': ' '
     }
 
     upload_conan_env = {}
     if args.upload:
         upload_conan_env = {
-            'CONAN_STABLE_BRANCH_PATTERN': 'master|sesame/master',
+            'CONAN_LOGIN_USERNAME': 'orhun',
+            'CONAN_PASSWORD': 'd71d4fa6b973f45c163e62061960d590a7bdedc1',
+            'CONAN_UPLOAD': 'https://api.bintray.com/conan/orhun/sesame',
+            'CONAN_UPLOAD_ONLY_WHEN_STABLE': '0',
         }
 
     build_conan_env = {}
@@ -60,57 +65,81 @@ def _build(args):
             'CONAN_BUILD_POLICY': 'missing'
         }
 
-    for build in [['android', args.android],
-                  ['emscripten', args.emscripten],
-                  ['linux', args.linux],
-                  ['macos', args.macos],
-                  ['uwp', args.uwp],
-                  ['windows', args.windows]]:
+    platform_activity_map = {
+        'android': args.android,
+        'emscripten': args.emscripten,
+        'linux': args.linux,
+        'macos': args.macos,
+        'uwp': args.uwp,
+        'windows': args.windows
+    }
+    args.windows = True
+    if not any(platform_activity_map.values()):
+        build = {
+            'Windows': 'windows',
+            'Darwin': 'macos',
+            'Linux': 'linux'
+        }.get(platform.system())
+        platform_activity_map[build] = True
+
+    docker_map = {
+        'Windows': 'sesameorhun/windows-devel',
+        'Android': 'sesameorhun/android-devel'
+    }
+
+    for build in platform_activity_map.items():
         name = build[0]
         active = build[1]
         if active:
             platform_conan_env = _prepare_conan_env(args, prep_for=name)
             conan_env = {**common_conan_env, **upload_conan_env, **build_conan_env, **platform_conan_env}
 
-            build_script = 'build.py'
-            if os.path.isfile('build-sesame.py'):
-                build_script = 'build-sesame.py'
-            subprocess.run(['python3', build_script], check=True, cwd='.', env={**os.environ.copy(), **conan_env})
+            docker_client = docker.from_env(version='auto')
+            # print(Fore.LIGHTYELLOW_EX + f'containers: {docker_client.containers.list()}')
+            # print(Fore.LIGHTYELLOW_EX + f'images: {docker_client.images.list()}')
+
+            result = docker_client.containers.run(image=docker_map['Windows'], command='cl', auto_remove=True, stderr=True)
+            # print(Style.BRIGHT + Fore.LIGHTWHITE_EX + result.decode())
+
+            # build_script = 'build.py'
+            # if os.path.isfile('build-sesame.py'):
+            #     build_script = 'build-sesame.py'
+            # subprocess.run(['python3', build_script], check=True, cwd='.', env={**os.environ.copy(), **conan_env})
 
 def _prepare_conan_env(args, prep_for):
     env = {}
 
-    os_build = {
-        'Windows': 'Windows',
-        'Darwin': 'Macos',
-        'Linux': 'Linux'
-    }.get(platform.system())
-    env['SESAME_OS_BUILD'] = os_build
-    env['SESAME_ARCH_BUILD'] = 'x86_64'
-
     env['SESAME_BUILD_FOR'] = prep_for
 
     if prep_for == 'android':
-        # get current clang version
-        clang = f'{os.environ["ANDROID_NDK_HOME"]}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang'
-        output = subprocess.check_output([clang, '--version']).decode()
-        p = re.compile(r'clang version (\d).(\d).(\d)')
-        m = p.search(output)
+        # host = {
+        #     'Windows': 'windows',
+        #     'Darwin': 'macos',
+        #     'Linux': 'linux'
+        # }.get(platform.system())
 
-        env['SESAME_ARCHS'] = 'armv8,x86'
-        env['SESAME_CLANG_VERSIONS'] = f'{m[1]}.{m[2]}'
-        env['SESAME_ANDROID_API_LEVELS'] = '23,24,28'
+        # # get current clang version
+        # clang = f'{os.environ["ANDROID_NDK_HOME"]}/toolchains/llvm/prebuilt/{host}-x86_64/bin/clang'
+        # output = subprocess.check_output([clang, '--version']).decode()
+        # p = re.compile(r'clang version (\d).(\d).(\d)')
+        # m = p.search(output)
 
-        # get current ndk version
-        source_properties = os.path.join(os.environ['ANDROID_NDK_HOME'], 'source.properties')
-        with open(source_properties, 'r') as f:
-            config_string = '[section]\n' + f.read()
-        config = configparser.ConfigParser()
-        config.read_string(config_string)
-        env['SESAME_ANDROID_NDK_VERSION'] = config['section']['Pkg.Revision'].split('.')[0]
+        # env['SESAME_CLANG_VERSIONS'] = f'{m[1]}.{m[2]}'
+        # env['SESAME_ARCHS'] = 'armv8,x86'
+        # env['SESAME_ANDROID_API_LEVELS'] = '25,28'
 
+        # # get current ndk version
+        # source_properties = os.path.join(os.environ['ANDROID_NDK_HOME'], 'source.properties')
+        # with open(source_properties, 'r') as f:
+        #     config_string = '[section]\n' + f.read()
+        # config = configparser.ConfigParser()
+        # config.read_string(config_string)
+        # env['SESAME_ANDROID_NDK_VERSION'] = config['section']['Pkg.Revision'].split('.')[0]
+        env['CONAN_CLANG_VERSIONS'] = '8.0'
+        env['CONAN_ARCHS'] = 'armv8,x86'
     elif prep_for == 'emscripten':
-        pass
+        env['CONAN_CLANG_VERSIONS'] = '7.0'
+        env['CONAN_ARCHS'] = 'llvmbc'
     elif prep_for == 'linux':
         env['CONAN_CLANG_VERSIONS'] = '6.0'
         env['CONAN_ARCHS'] = 'x86_64'

@@ -51,11 +51,13 @@ def _new(args):
     normal = not args.header_only and not args.tool
     if normal:
         normal_build_file = pathlib.Path(sesame.get_template_path('normal-build-template.txt')).read_text()
+        normal_build_sesame_file = pathlib.Path(sesame.get_template_path('normal-build-sesame-template.txt')).read_text()
         normal_conanfile_file = pathlib.Path(sesame.get_template_path('normal-conanfile-template.txt')).read_text()
         files = {
             '.gitignore': gitignore_file.format(name=name, version=version, package_name=package_name),
             '.gitattributes': gitattributes_file.format(name=name, version=version, package_name=package_name),
             'build.py': normal_build_file.format(name=name, version=version, package_name=package_name),
+            'build-sesame.py': normal_build_sesame_file.format(name=name, version=version, package_name=package_name),
             'conanfile.py': normal_conanfile_file.format(name=name, version=version, package_name=package_name),
             'LICENSE.md': license_file.format(name=name, version=version, package_name=package_name),
             'test_package/CMakeLists.txt': test_package_cmakelists_txt_file.format(name=name, version=version, package_name=package_name),
@@ -64,22 +66,26 @@ def _new(args):
         }
     elif args.tool:
         tool_build_file = pathlib.Path(sesame.get_template_path('tool-build-template.txt')).read_text()
+        tool_build_sesame_file = pathlib.Path(sesame.get_template_path('tool-build-sesame-template.txt')).read_text()
         tool_conanfile_file = pathlib.Path(sesame.get_template_path('tool-conanfile-template.txt')).read_text()
         files = {
             '.gitignore': gitignore_file.format(name=name, version=version, package_name=package_name),
             '.gitattributes': gitattributes_file.format(name=name, version=version, package_name=package_name),
             'build.py': tool_build_file.format(name=name, version=version, package_name=package_name),
+            'build-sesame.py': tool_build_sesame_file.format(name=name, version=version, package_name=package_name),
             'conanfile.py': tool_conanfile_file.format(name=name, version=version, package_name=package_name),
             'LICENSE.md': license_file.format(name=name, version=version, package_name=package_name),
             'test_package/conanfile.py': tool_test_package_conanfile_file.format(name=name, version=version, package_name=package_name),
         }
     elif args.header_only:
         header_only_build_file = pathlib.Path(sesame.get_template_path('header-only-build-template.txt')).read_text()
+        header_only_build_sesame_file = pathlib.Path(sesame.get_template_path('header-only-build-sesame-template.txt')).read_text()
         header_only_conanfile_file = pathlib.Path(sesame.get_template_path('header-only-conanfile-template.txt')).read_text()
         files = {
             '.gitignore': gitignore_file.format(name=name, version=version, package_name=package_name),
             '.gitattributes': gitattributes_file.format(name=name, version=version, package_name=package_name),
             'build.py': header_only_build_file.format(name=name, version=version, package_name=package_name),
+            'build-sesame.py': header_only_build_sesame_file.format(name=name, version=version, package_name=package_name),
             'conanfile.py': header_only_conanfile_file.format(name=name, version=version, package_name=package_name),
             'LICENSE.md': license_file.format(name=name, version=version, package_name=package_name),
             'test_package/CMakeLists.txt': test_package_cmakelists_txt_file.format(name=name, version=version, package_name=package_name),

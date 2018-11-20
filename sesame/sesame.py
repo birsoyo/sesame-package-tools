@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import colorama
 import inspect
 import sys
 import os
@@ -41,6 +42,7 @@ class Command(object):
                 print("No command given.")
 
 def _main(args):
+    colorama.init(autoreset=True)
     command = Command()
     command._run(args)
 
