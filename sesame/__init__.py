@@ -15,3 +15,6 @@ def get_conan_settings_yml_path():
 
 def get_conan_profiles_path(name):
     return os.path.join(get_conan_settings_path(), 'profiles', name)
+
+def get_setup_path():
+    return os.path.abspath(os.path.join(_ROOT, os.pardir))

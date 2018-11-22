@@ -1,10 +1,7 @@
-include(sesame-default.profile)
-include(sesame-cmake.profile)
-include(sesame-vs-v141.profile)
-include(cpp-vs.profile)
+include(default)
 
 [settings]
+compiler=Visual Studio
+compiler.toolset=v141
 os=Windows
-
-#[options]
-#*:windows_deploy_target=10
+cppstd=17

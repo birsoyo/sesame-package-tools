@@ -1,5 +1,7 @@
+include(default)
 
 [settings]
+os=Android
 compiler=clang
-compiler.version=6.0
 compiler.libcxx=libc++
+cppstd=17

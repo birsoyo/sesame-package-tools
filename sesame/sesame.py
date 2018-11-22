@@ -8,6 +8,7 @@ import os
 from argparse import ArgumentError, ArgumentParser
 from sesame.commands.new import new_cmd
 from sesame.commands.build import build_cmd
+from sesame.commands.dbuild import dbuild_cmd
 
 class Command(object):
     def __init__(self):
@@ -21,6 +22,9 @@ class Command(object):
 
     def build(self, *args):
         build_cmd(args)
+
+    def dbuild(self, *args):
+        dbuild_cmd(args)
 
     def _commands(self):
         result = {}
