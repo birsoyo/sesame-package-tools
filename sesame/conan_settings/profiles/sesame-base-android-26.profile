@@ -1,4 +1,4 @@
 include(sesame-android.profile)
 
 [settings]
-os.api_level=24
+os.api_level=26

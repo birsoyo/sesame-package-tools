@@ -31,6 +31,7 @@ def dbuild_cmd(args):
     _build(args)
 
 def _is_docker_running():
+    return True
     service = None
     try:
         service = psutil.win_service_get('docker')
@@ -43,28 +44,32 @@ def _is_docker_running():
 def _build(args):
     if args.android:
         docker_image = 'sesameorhun/android-devel'
+        sesame_mount = '/tmp/sesame'
         recipe_mount = '/tmp/recipe'
         result_mount = '/tmp/result'
         conan_user_home = '~/'
         command = f'/bin/bash -c "cd {recipe_mount} && sesame build --android --user {args.user} --channel {args.channel} && conan remove */*@* --builds --src --force && cp -r ~/.conan {result_mount}"'
     elif args.emscripten:
         docker_image = 'sesameorhun/emscripten-devel'
+        sesame_mount = '/tmp/sesame'
         recipe_mount = '/tmp/recipe'
         result_mount = '/tmp/result'
         conan_user_home = '~/'
         command = f'/bin/bash -c "cd {recipe_mount} && sesame build --emscripten --user {args.user} --channel {args.channel} && conan remove */* --builds --src --force && cp -r ~/.conan {result_mount}"'
     elif args.windows:
         docker_image = 'sesameorhun/windows-devel'
+        sesame_mount = 'C:\\sesame'
         recipe_mount = 'C:\\recipe'
         result_mount = 'C:\\result'
         conan_user_home = 'C:\\conan'
-        command = f'powershell -command cd recipe ; sesame build --windows --user {args.user} --channel {args.channel} ; conan remove --builds --src --force * ; robocopy "C:\\conan\\.conan" "c:\\result" /MIR /J /MOVE'
+        command = f'powershell -command cd sesame ; pip install . ; cd ..\\\\recipe ; sesame build --windows --user {args.user} --channel {args.channel} ; conan remove --builds --src --force * ; robocopy "$env:USERPROFILE\\.conan" "c:\\result" /MIR /J /MOVE'
     elif args.uwp:
         docker_image = 'sesameorhun/windows-devel'
+        sesame_mount = 'C:\\sesame'
         recipe_mount = 'C:\\recipe'
         result_mount = 'C:\\result'
         conan_user_home = 'C:\\conan'
-        command = f'powershell -command cd recipe ; sesame build --uwp --user {args.user} --channel {args.channel} ; conan remove --builds --src --force * ; robocopy "C:\\conan\\.conan" "c:\\result" /MIR /J /MOVE'
+        command = f'powershell -command cd sesame ; pip install . ; cd ..\\\\recipe ; sesame build --uwp --user {args.user} --channel {args.channel} ; conan remove --builds --src --force * ; robocopy "$env:USERPROFILE\\.conan" "c:\\result" /MIR /J /MOVE'
 
     is_docker_running = _is_docker_running()
 
@@ -77,6 +82,10 @@ def _build(args):
                 image=docker_image,
                 command=command,
                 volumes={
+                    # sesame.get_setup_path(): {
+                    #     'bind': sesame_mount,
+                    #     'mode': 'rw'
+                    # },
                     os.getcwd(): {
                         'bind': recipe_mount,
                         'mode': 'rw'
@@ -87,7 +96,6 @@ def _build(args):
                     }
                 },
                 environment={
-                    'CONAN_USER_HOME': conan_user_home,
                     'CONAN_USER_HOME_SHORT': 'None',
                     'CONAN_TEMP_TEST_FOLDER': 'False'
                 },

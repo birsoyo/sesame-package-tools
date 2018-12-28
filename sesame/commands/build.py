@@ -125,7 +125,13 @@ def _prepare_conan_env(args, prep_for):
         envs[1]['SESAME_BUILD_FOR'] = prep_for
         envs[1]['CONAN_CLANG_VERSIONS'] = '8.0'
         envs[1]['CONAN_ARCHS'] = 'armv8,x86'
-        envs[1]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-android-28.profile')
+        envs[1]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-android-26.profile')
+
+        envs.append({})
+        envs[2]['SESAME_BUILD_FOR'] = prep_for
+        envs[2]['CONAN_CLANG_VERSIONS'] = '8.0'
+        envs[2]['CONAN_ARCHS'] = 'armv8,x86'
+        envs[2]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-android-28.profile')
     elif prep_for == 'emscripten':
         envs[0]['CONAN_CLANG_VERSIONS'] = '7.0'
         envs[0]['CONAN_ARCHS'] = 'llvmbc'
@@ -142,7 +148,7 @@ def _prepare_conan_env(args, prep_for):
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-uwp.profile')
     elif prep_for == 'windows':
         envs[0]['CONAN_VISUAL_VERSIONS'] = '15'
-        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MD, MDd, MT, MTd'
+        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MD, MDd'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-windows.profile')
 
