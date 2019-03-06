@@ -48,7 +48,7 @@ class SesamePackager(ConanMultiPackager):
     def run(self, base_profile_name=None):
         super().run(base_profile_name)
 
-def get_builder(build_policy=None):
+def get_builder(build_policy=None, build_types=None):
     BuildGenerator.get_builds = _get_builds
 
     platform_info = None
@@ -66,5 +66,5 @@ def get_builder(build_policy=None):
                 return 'Emscripten'
         platform_info = EmscriptenPlatformInfo()
 
-    builder = SesamePackager(platform_info=platform_info)
+    builder = SesamePackager(platform_info=platform_info, build_types=build_types)
     return builder

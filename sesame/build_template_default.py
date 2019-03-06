@@ -11,9 +11,10 @@ import cpt.builds_generator
 def get_builder(shared_option_name=None,
                 pure_c=True,
                 dll_with_static_runtime=False,
-                build_policy=None):
+                build_policy=None,
+                build_types=None):
 
-    builder = build_shared.get_builder(build_policy)
+    builder = build_shared.get_builder(build_policy, build_types)
     builder.add_common_builds(
         shared_option_name=shared_option_name,
         pure_c=pure_c,

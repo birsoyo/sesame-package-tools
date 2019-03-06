@@ -143,7 +143,7 @@ def _prepare_conan_env(args, prep_for):
         envs[0]['CONAN_ARCHS'] = 'x86_64'
     elif prep_for == 'uwp':
         envs[0]['CONAN_VISUAL_VERSIONS'] = '15'
-        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MD, MDd, MT, MTd'
+        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MD, MDd'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-uwp.profile')
     elif prep_for == 'windows':
