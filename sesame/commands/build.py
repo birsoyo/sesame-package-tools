@@ -136,11 +136,11 @@ def _prepare_conan_env(args, prep_for):
         envs[0]['CONAN_CLANG_VERSIONS'] = '7.0'
         envs[0]['CONAN_ARCHS'] = 'llvmbc'
     elif prep_for == 'linux':
-        envs[0]['CONAN_CLANG_VERSIONS'] = '8.0'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
+        envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-linux.profile')
     elif prep_for == 'macos':
-        envs[0]['CONAN_APPLE_CLANG_VERSIONS'] = '9.1'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
+        envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-macos.profile')
     elif prep_for == 'uwp':
         envs[0]['CONAN_VISUAL_VERSIONS'] = '15'
         envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MD, MDd'
