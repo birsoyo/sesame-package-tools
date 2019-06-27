@@ -4,4 +4,4 @@ include(default)
 os=Android
 compiler=clang
 compiler.libcxx=libc++
-cppstd=17
+compiler.cppstd=17

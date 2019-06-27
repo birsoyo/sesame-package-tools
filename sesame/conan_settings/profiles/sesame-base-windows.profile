@@ -2,6 +2,7 @@ include(default)
 
 [settings]
 compiler=Visual Studio
-compiler.toolset=v141
+compiler.toolset=v142
+compiler.cppstd=17
 os=Windows
-cppstd=17
+
