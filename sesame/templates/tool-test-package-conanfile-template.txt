@@ -12,5 +12,6 @@ class {package_name}TestConan(ConanFile):
         output = io.StringIO()
         self.run('<tool> --version', output=output)
         self.output.info(f'Installed:\n{{str(output.getvalue())}}')
-        ver = str(self.requires['{name}'].conan_reference.version)
+        ver = str(self.requires['{name}'].range_ref.version)
+        self.output.info(f"{name} package version is '{ver}'.")
         assert(ver in str(output.getvalue()))

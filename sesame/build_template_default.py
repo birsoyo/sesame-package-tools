@@ -8,16 +8,9 @@ from sesame import build_shared
 
 import cpt.builds_generator
 
-def get_builder(shared_option_name=None,
-                pure_c=True,
-                dll_with_static_runtime=False,
-                build_policy=None,
-                build_types=None):
+def get_builder(pure_c=False):
 
-    builder = build_shared.get_builder(build_policy, build_types)
-    builder.add_common_builds(
-        shared_option_name=shared_option_name,
-        pure_c=pure_c,
-        dll_with_static_runtime=dll_with_static_runtime)
+    builder = build_shared.get_builder()
+    builder.add_common_builds(pure_c=pure_c)
 
     return builder

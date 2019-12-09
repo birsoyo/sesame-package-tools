@@ -7,7 +7,7 @@ class {package_name}Conan(ConanFile):
     name = '{name}'
     version = '{version}'
     description = '<Description of {package_name} here>.'
-    url = 'https://github.com/birsoyo/conan-{name}'
+    url = 'https://github.com/birsoyo/sesame'
     homepage = 'https://github.com/original_author/original_lib'
     author = 'Orhun Birsoy <orhunbirsoy@gmail.com>'
 
@@ -16,7 +16,7 @@ class {package_name}Conan(ConanFile):
     # Packages the license for the conanfile.py
     export = ['LICENSE.md']
 
-    settings = {{'os_build': ['Windows', 'Linux', 'Macos'], 'arch_build': ['x86', 'x86_64']}}
+    settings = {{'os_build': ['Windows', 'Linux', 'Macos'], 'arch_build': ['x86_64']}}
 
     def build(self):
         suffix = self._download_suffix()

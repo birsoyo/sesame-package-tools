@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import platform
 import re
+import time
 
 import docker
 import vswhere
@@ -29,18 +30,13 @@ def build_cmd(args):
     parser.add_argument("--emscripten", help="builds for emscripten", default=False, action="store_true")
     parser.add_argument("--linux", help="builds for linux", default=False, action="store_true")
     parser.add_argument("--macos", help="builds for macOS", default=False, action="store_true")
-    parser.add_argument("--uwp", help="builds for UWP", default=False, action="store_true")
+    parser.add_argument("--ios", help="builds for iOS", default=False, action="store_true")
     parser.add_argument("--windows", help="builds for windows", default=False, action="store_true")
 
     args = parser.parse_args(*args)
     _build(args)
 
 def _build(args):
-    target_path = os.path.expanduser('~/.conan/settings.yml')
-    if os.path.exists(target_path):
-        os.remove(target_path)
-    shutil.copy(sesame.get_conan_settings_yml_path(), target_path)
-
     common_conan_env = {
         'CONAN_USERNAME': f'{args.user}',
         'CONAN_CHANNEL': f'{args.channel}',
@@ -69,10 +65,11 @@ def _build(args):
         'emscripten': args.emscripten,
         'linux': args.linux,
         'macos': args.macos,
-        'uwp': args.uwp,
+        'ios': args.ios,
         'windows': args.windows
     }
 
+    # if it is not given just build it for the host platform
     if not any(platform_activity_map.values()):
         build = {
             'Windows': 'windows',
@@ -80,6 +77,8 @@ def _build(args):
             'Linux': 'linux'
         }.get(platform.system())
         platform_activity_map[build] = True
+        print(Fore.YELLOW + Style.BRIGHT + f'\nNo platform given. Building for {build}!')
+        time.sleep(2)
 
     for build in platform_activity_map.items():
         name = build[0]
@@ -103,54 +102,31 @@ def _build(args):
 def _prepare_conan_env(args, prep_for):
     envs = [{}]
 
+    envs[0]['CONAN_BUILD_TYPES'] = 'Debug,RelWithDebInfo'
+    envs[0]['CONAN_APPLE_CLANG_VERSIONS'] = '11.0'
+    envs[0]['CONAN_VISUAL_VERSIONS'] = '16'
+    envs[0]['CONAN_CPPSTDS'] = '17'
+    envs[0]['SESAME_IOS_CMAKE_TOOLCHAIN_PATH'] = sesame.get_cmake_path('ios.toolchain.cmake')
+
     if prep_for == 'android':
-        host = {
-            'Windows': 'windows',
-            'Darwin': 'macos',
-            'Linux': 'linux'
-        }.get(platform.system())
-
-        # get current clang version
-        clang = f'{os.environ["ANDROID_NDK_HOME"]}/toolchains/llvm/prebuilt/{host}-x86_64/bin/clang'
-        output = subprocess.check_output([clang, '--version']).decode()
-        p = re.compile(r'clang version (\d).(\d).(\d)')
-        m = p.search(output)
-
         envs[0]['SESAME_BUILD_FOR'] = prep_for
-        envs[0]['CONAN_CLANG_VERSIONS'] = '8.0'
-        envs[0]['CONAN_ARCHS'] = 'armv8,x86'
-        envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-android-25.profile')
-
-        envs.append({})
-        envs[1]['SESAME_BUILD_FOR'] = prep_for
-        envs[1]['CONAN_CLANG_VERSIONS'] = '8.0'
-        envs[1]['CONAN_ARCHS'] = 'armv8,x86'
-        envs[1]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-android-26.profile')
-
-        envs.append({})
-        envs[2]['SESAME_BUILD_FOR'] = prep_for
-        envs[2]['CONAN_CLANG_VERSIONS'] = '8.0'
-        envs[2]['CONAN_ARCHS'] = 'armv8,x86'
-        envs[2]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-android-28.profile')
+        envs[0]['CONAN_ARCHS'] = 'armv8,x86_64'
+        envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-android-28.profile')
     elif prep_for == 'emscripten':
-        envs[0]['CONAN_CLANG_VERSIONS'] = '7.0'
-        envs[0]['CONAN_ARCHS'] = 'llvmbc'
+        envs[0]['SESAME_BUILD_FOR'] = prep_for
+        envs[0]['CONAN_ARCHS'] = 'wasm'
+        envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-emscripten.profile')
     elif prep_for == 'linux':
-        envs[0]['CONAN_CLANG_VERSIONS'] = '8.0'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-linux.profile')
     elif prep_for == 'macos':
-        envs[0]['CONAN_APPLE_CLANG_VERSIONS'] = '10.0'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-macos.profile')
-    elif prep_for == 'uwp':
-        envs[0]['CONAN_VISUAL_VERSIONS'] = '16'
-        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MD, MDd'
-        envs[0]['CONAN_ARCHS'] = 'x86_64'
-        envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-uwp.profile')
+    elif prep_for == 'ios':
+        envs[0]['CONAN_ARCHS'] = 'x86_64,armv8'
+        envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-ios.profile')
     elif prep_for == 'windows':
-        envs[0]['CONAN_VISUAL_VERSIONS'] = '16'
-        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MD, MDd'
+        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MT, MTd'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-windows.profile')
 

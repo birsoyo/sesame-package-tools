@@ -5,8 +5,8 @@ compiler=apple-clang
 compiler.version=11.0
 compiler.libcxx=libc++
 compiler.cppstd=17
-os=Macos
-os.version=10.14
+os=iOS
+os.version=13.0
 
 [build_requires]
 cmake/3.16.0@sesame/testing
