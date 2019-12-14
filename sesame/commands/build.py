@@ -42,7 +42,6 @@ def _build(args):
         'CONAN_CHANNEL': f'{args.channel}',
 
         'CONAN_PIP_PACKAGE': 'False',
-        'CONAN_BUILD_TYPES': 'Debug,RelWithDebInfo',
         'CONAN_STABLE_BRANCH_PATTERN': ' '
     }
 
@@ -102,18 +101,23 @@ def _build(args):
 def _prepare_conan_env(args, prep_for):
     envs = [{}]
 
-    envs[0]['CONAN_BUILD_TYPES'] = 'Debug,RelWithDebInfo'
+    with open('build-sesame.py') as file:
+      if 'builder = build_template_tool.get_builder()' in file.read():
+        return envs # none of the following is needed for building tools
+
+    envs[0]['CONAN_BUILD_TYPES'] = 'Debug'
     envs[0]['CONAN_APPLE_CLANG_VERSIONS'] = '11.0'
     envs[0]['CONAN_VISUAL_VERSIONS'] = '16'
     envs[0]['CONAN_CPPSTDS'] = '17'
-    envs[0]['SESAME_IOS_CMAKE_TOOLCHAIN_PATH'] = sesame.get_cmake_path('ios.toolchain.cmake')
 
     if prep_for == 'android':
         envs[0]['SESAME_BUILD_FOR'] = prep_for
+        envs[0]['CONAN_CLANG_VERSIONS'] = '8'
         envs[0]['CONAN_ARCHS'] = 'armv8,x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-android-28.profile')
     elif prep_for == 'emscripten':
         envs[0]['SESAME_BUILD_FOR'] = prep_for
+        envs[0]['CONAN_CLANG_VERSIONS'] = '10'
         envs[0]['CONAN_ARCHS'] = 'wasm'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-emscripten.profile')
     elif prep_for == 'linux':
@@ -126,7 +130,7 @@ def _prepare_conan_env(args, prep_for):
         envs[0]['CONAN_ARCHS'] = 'x86_64,armv8'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-ios.profile')
     elif prep_for == 'windows':
-        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MT, MTd'
+        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MTd'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-windows.profile')
 

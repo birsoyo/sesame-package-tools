@@ -50,9 +50,11 @@ def _new(args):
     if normal:
         normal_build_sesame_file = pathlib.Path(sesame.get_template_path('normal-build-sesame-template.txt')).read_text()
         normal_conanfile_file = pathlib.Path(sesame.get_template_path('normal-conanfile-template.txt')).read_text()
+        normal_cmakelists_file = pathlib.Path(sesame.get_template_path('normal-cmakelists-template.txt')).read_text()
         files = {
             'build-sesame.py': normal_build_sesame_file.format(name=name, version=version, package_name=package_name),
             'conanfile.py': normal_conanfile_file.format(name=name, version=version, package_name=package_name),
+            'CMakeLists.txt': normal_cmakelists_file.format(name=name, version=version, package_name=package_name),
             'LICENSE.md': license_file.format(name=name, version=version, package_name=package_name),
             'test_package/CMakeLists.txt': test_package_cmakelists_txt_file.format(name=name, version=version, package_name=package_name),
             'test_package/conanfile.py': test_package_conanfile_file.format(name=name, version=version, package_name=package_name),

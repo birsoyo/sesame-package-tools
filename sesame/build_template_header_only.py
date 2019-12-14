@@ -3,7 +3,7 @@
 
 from sesame import build_shared
 
-def get_builder(**kwargs):
-    builder = build_shared.get_builder(**kwargs)
+def get_builder():
+    builder = build_shared.get_builder()
     builder.add()
     return builder

@@ -13,9 +13,6 @@ class {package_name}Conan(ConanFile):
 
     license = '<Indicates License type of the packaged library>'
 
-    # Packages the license for the conanfile.py
-    export = ['LICENSE.md']
-
     settings = {{'os_build': ['Windows', 'Linux', 'Macos'], 'arch_build': ['x86_64']}}
 
     def build(self):
@@ -25,7 +22,6 @@ class {package_name}Conan(ConanFile):
         os.rename(f'<extracted_folder_name>', '<a_simple_name>')
 
     def package(self):
-        self.copy(pattern='LICENSE', dst='licenses', src='.')
         self.copy('*', dst='', src='', keep_path=True)
 
     def package_info(self):

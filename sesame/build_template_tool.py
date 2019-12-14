@@ -4,12 +4,7 @@
 import platform
 from sesame import build_shared
 
-def get_builder(**kwargs):
-    builder = build_shared.get_builder(**kwargs)
-
-    os_build = {
-        'Windows': 'Windows',
-        'Darwin': 'Macos',
-        'Linux': 'Linux'}.get(platform.system())
-    builder.add(settings={'os_build': os_build, 'arch_build': 'x86_64'})
+def get_builder():
+    builder = build_shared.get_builder()
+    builder.add()
     return builder

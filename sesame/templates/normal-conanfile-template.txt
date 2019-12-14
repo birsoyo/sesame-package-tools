@@ -13,10 +13,6 @@ class {package_name}Conan(ConanFile):
 
     license = '<Indicates License type of the packaged library>'
 
-    # Packages the license for the conanfile.py
-    exports = ['LICENSE.md']
-
-    # Remove following lines if the target lib does not use cmake.
     exports_sources = ['CMakeLists.txt']
     generators = 'cmake'
 
@@ -39,7 +35,6 @@ class {package_name}Conan(ConanFile):
         cmake.build()
 
     def package(self):
-        self.copy(pattern='LICENSE', dst='licenses', src=self.source_subfolder)
         cmake = self._configure_cmake()
         cmake.install()
         # If the CMakeLists.txt has a proper install method, the steps below may be redundant
@@ -56,10 +51,53 @@ class {package_name}Conan(ConanFile):
         self.cpp_info.libs = tools.collect_libs(self)
 
     def _configure_cmake(self):
-        cmake = CMake(self)
-        cmake.verbose = True
-        cmake.definitions['BUILD_TESTS'] = False # example
+        generator, defs = self._setup_cmake()
 
-        cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = True
-        cmake.configure(source_folder=self.source_subfolder, build_folder=self.build_subfolder)
+        defs['BUILD_TESTS'] = False # example
+
+        cmake = CMake(self, generator=generator)
+        cmake.verbose = True
+
+        cmake.configure(defs=defs, build_folder=self.build_subfolder)
         return cmake
+
+    def _setup_cmake(self):
+      generator = None
+      defs = {{}}
+
+      defs['CMAKE_POSITION_INDEPENDENT_CODE'] = True
+
+      if self.settings.os == 'Android':
+          generator = 'Ninja'
+          abi = {{
+              'armv8'   : 'arm64-v8a',
+              'armv7'   : 'armeabi-v7a',
+              'x86'     : 'x86',
+              'x86_64'  : 'x86_64' }}.get(str(self.settings.arch))
+
+          defs['ANDROID_PLATFORM'] = f'android-{{self.settings.os.api_level}}'
+          defs['ANDROID_ABI'] = abi
+          defs['ANDROID_STL'] = 'c++_static'
+          defs['ANDROID_CPP_FEATURES'] = 'rtti exceptions'
+          defs['ANDROID_ARM_MODE'] = 'arm'
+          defs['ANDROID_ARM_NEON'] = True
+          defs['CMAKE_TOOLCHAIN_FILE'] = self.deps_user_info['ndk'].cmake_toolchain_path
+      elif self.settings.os == 'Macos':
+          defs['CMAKE_OSX_DEPLOYMENT_TARGET'] = self.settings.os.version
+      elif self.settings.os == 'iOS':
+          platform_map = {{
+              'x86_64': 'SIMULATOR64',
+              'arm64': 'OS'
+          }}
+          arch = tools.to_apple_arch(self.settings.arch)
+
+          defs['CMAKE_TOOLCHAIN_FILE'] = self.deps_user_info['ios'].cmake_toolchain_path
+          defs['IOS_ARCH'] = arch
+          defs['IOS_PLATFORM'] = platform_map[arch]
+          defs['IOS_DEPLOYMENT_TARGET'] = str(self.settings.os.version)
+          defs['ENABLE_VISIBILITY'] = False
+      elif self.settings.os == 'Emscripten':
+          defs['CMAKE_TOOLCHAIN_FILE'] = self.deps_user_info['emscripten'].cmake_toolchain_path
+          generator = 'Ninja'
+
+      return generator,defs

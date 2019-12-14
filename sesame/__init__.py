@@ -18,6 +18,3 @@ def get_conan_profiles_path(name):
 
 def get_setup_path():
     return os.path.abspath(os.path.join(_ROOT, os.pardir))
-
-def get_cmake_path(name):
-    return os.path.abspath(os.path.join(_ROOT, 'cmake', name))
