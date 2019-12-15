@@ -105,7 +105,7 @@ def _prepare_conan_env(args, prep_for):
       if 'builder = build_template_tool.get_builder()' in file.read():
         return envs # none of the following is needed for building tools
 
-    envs[0]['CONAN_BUILD_TYPES'] = 'Debug'
+    envs[0]['CONAN_BUILD_TYPES'] = 'Debug,RelWithDebInfo'
     envs[0]['CONAN_APPLE_CLANG_VERSIONS'] = '11.0'
     envs[0]['CONAN_VISUAL_VERSIONS'] = '16'
     envs[0]['CONAN_CPPSTDS'] = '17'
@@ -121,6 +121,7 @@ def _prepare_conan_env(args, prep_for):
         envs[0]['CONAN_ARCHS'] = 'wasm'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-emscripten.profile')
     elif prep_for == 'linux':
+        envs[0]['CONAN_CLANG_VERSIONS'] = '10'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-linux.profile')
     elif prep_for == 'macos':
@@ -130,7 +131,7 @@ def _prepare_conan_env(args, prep_for):
         envs[0]['CONAN_ARCHS'] = 'x86_64,armv8'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-ios.profile')
     elif prep_for == 'windows':
-        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MTd'
+        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MTd,MT'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-windows.profile')
 
