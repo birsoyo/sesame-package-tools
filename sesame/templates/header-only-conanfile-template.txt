@@ -15,7 +15,6 @@ class {package_name}Conan(ConanFile):
 
     no_copy_source = True
 
-    # Custom attributes for Bincrafters recipe conventions
     source_subfolder = "source_subfolder"
 
     def source(self):
