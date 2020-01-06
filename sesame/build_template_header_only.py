@@ -21,6 +21,12 @@ def get_builder():
     if os_build == 'Windows':
       settings['compiler.version'] = os.getenv('CONAN_VISUAL_VERSIONS', '16').split(',')[0]
       settings['arch'] = os.getenv('CONAN_ARCHS', 'x86_64').split(',')[0]
+    elif os_build == 'Macos':
+      settings['compiler.version'] = os.getenv('CONAN_APPLE_CLANG_VERSIONS', '11.0').split(',')[0]
+      settings['arch'] = os.getenv('CONAN_ARCHS', 'x86_64').split(',')[0]
+    elif os_build == 'Linux':
+      settings['compiler.version'] = os.getenv('CONAN_CLANG_VERSIONS', '10').split(',')[0]
+      settings['arch'] = os.getenv('CONAN_ARCHS', 'x86_64').split(',')[0]
 
     builder.add(settings=settings)
     return builder

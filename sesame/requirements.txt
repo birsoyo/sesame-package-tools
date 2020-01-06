@@ -1,5 +1,5 @@
-conan>=1.16.1
-conan-package-tools>=0.28.1
-docker>=3.5.1
+conan>=1.21.0
+conan-package-tools>=0.30.4
+docker>=4.1.0
 vswhere
 psutil
