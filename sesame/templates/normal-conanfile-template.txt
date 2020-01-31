@@ -98,5 +98,7 @@ class {package_name}Conan(ConanFile):
       elif self.settings.os == 'Emscripten':
           defs['CMAKE_TOOLCHAIN_FILE'] = self.deps_user_info['emscripten'].cmake_toolchain_path
           generator = 'Ninja'
+      elif self.settings.os == 'Windows':
+          defs['CMAKE_SYSTEM_VERSION'] = '10.0'
 
       return generator,defs

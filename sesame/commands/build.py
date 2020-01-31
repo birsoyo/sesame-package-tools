@@ -131,7 +131,7 @@ def _prepare_conan_env(args, prep_for):
         envs[0]['CONAN_ARCHS'] = 'x86_64,armv8'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-ios.profile')
     elif prep_for == 'windows':
-        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MTd,MT'
+        envs[0]['CONAN_VISUAL_RUNTIMES'] = 'MDd,MD'
         envs[0]['CONAN_ARCHS'] = 'x86_64'
         envs[0]['CONAN_BASE_PROFILE'] = sesame.get_conan_profiles_path('sesame-base-windows.profile')
 
