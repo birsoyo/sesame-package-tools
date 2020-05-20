@@ -3,7 +3,6 @@ include(default)
 [settings]
 compiler=apple-clang
 compiler.libcxx=libc++
-compiler.cppstd=17
 os=iOS
 os.version=13.0
 

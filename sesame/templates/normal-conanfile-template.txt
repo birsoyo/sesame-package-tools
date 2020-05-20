@@ -4,6 +4,9 @@ import os
 from conans import ConanFile, CMake, tools
 
 class {package_name}Conan(ConanFile):
+    python_requires = 'sesame/0.1.0@sesame/stable'
+    python_requires_extend = "sesame.SesameBase"
+
     name = '{name}'
     version = '{version}'
     description = '<Description of {package_name} here>.'
@@ -59,46 +62,3 @@ class {package_name}Conan(ConanFile):
 
         cmake.configure(defs=defs, build_folder=self.build_subfolder)
         return cmake
-
-    def _setup_cmake(self):
-      generator = None
-      defs = {{}}
-
-      defs['CMAKE_POSITION_INDEPENDENT_CODE'] = True
-
-      if self.settings.os == 'Android':
-          generator = 'Ninja'
-          abi = {{
-              'armv8'   : 'arm64-v8a',
-              'armv7'   : 'armeabi-v7a',
-              'x86'     : 'x86',
-              'x86_64'  : 'x86_64' }}.get(str(self.settings.arch))
-
-          defs['ANDROID_PLATFORM'] = f'android-{{self.settings.os.api_level}}'
-          defs['ANDROID_ABI'] = abi
-          defs['ANDROID_STL'] = 'c++_static'
-          defs['ANDROID_CPP_FEATURES'] = 'rtti exceptions'
-          defs['ANDROID_ARM_MODE'] = 'arm'
-          defs['ANDROID_ARM_NEON'] = True
-          defs['CMAKE_TOOLCHAIN_FILE'] = self.deps_user_info['ndk'].cmake_toolchain_path
-      elif self.settings.os == 'Macos':
-          defs['CMAKE_OSX_DEPLOYMENT_TARGET'] = self.settings.os.version
-      elif self.settings.os == 'iOS':
-          platform_map = {{
-              'x86_64': 'SIMULATOR64',
-              'arm64': 'OS'
-          }}
-          arch = tools.to_apple_arch(self.settings.arch)
-
-          defs['CMAKE_TOOLCHAIN_FILE'] = self.deps_user_info['ios'].cmake_toolchain_path
-          defs['IOS_ARCH'] = arch
-          defs['IOS_PLATFORM'] = platform_map[arch]
-          defs['IOS_DEPLOYMENT_TARGET'] = str(self.settings.os.version)
-          defs['ENABLE_VISIBILITY'] = False
-      elif self.settings.os == 'Emscripten':
-          defs['CMAKE_TOOLCHAIN_FILE'] = self.deps_user_info['emscripten'].cmake_toolchain_path
-          generator = 'Ninja'
-      elif self.settings.os == 'Windows':
-          defs['CMAKE_SYSTEM_VERSION'] = '10.0'
-
-      return generator,defs

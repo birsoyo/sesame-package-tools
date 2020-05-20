@@ -1,7 +1,6 @@
 [settings]
 compiler=apple-clang
 compiler.libcxx=libc++
-compiler.cppstd=17
 os=Macos
 os.version=10.15
 
