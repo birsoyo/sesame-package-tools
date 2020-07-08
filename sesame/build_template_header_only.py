@@ -17,6 +17,7 @@ def get_builder():
 
     settings['arch_build'] = 'x86_64'
     settings['os_build'] = os_build
+    settings['compiler.cppstd'] = os.getenv('CONAN_CPPSTDS', '20').split(',')[0]
 
     if os_build == 'Windows':
       settings['compiler.version'] = os.getenv('CONAN_VISUAL_VERSIONS', '16').split(',')[0]

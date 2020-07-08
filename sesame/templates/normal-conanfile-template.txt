@@ -4,7 +4,7 @@ import os
 from conans import ConanFile, CMake, tools
 
 class {package_name}Conan(ConanFile):
-    python_requires = 'sesame/0.1.0@sesame/stable'
+    python_requires = 'sesame/0.1.0'
     python_requires_extend = "sesame.SesameBase"
 
     name = '{name}'

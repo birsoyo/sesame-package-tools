@@ -4,7 +4,7 @@ import os
 from conans import ConanFile, CMake, tools, RunEnvironment
 
 class {package_name}TestConan(ConanFile):
-    python_requires = 'sesame/0.1.0@sesame/stable'
+    python_requires = 'sesame/0.1.0'
     python_requires_extend = "sesame.SesameBase"
 
     settings = 'os', 'compiler', 'build_type', 'arch'
